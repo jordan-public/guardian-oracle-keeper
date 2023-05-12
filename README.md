@@ -53,6 +53,8 @@ The pair of Guardian Oracle-Keeper Tokens can be abused in order to manipulate t
 
 - The user which swaps one token can unwrap the received token from the DEX, in addition to receiving share of the rewards for performing callback services.
 
+Let us consider another issue: low gWETH/gUSDC liquidity on the authorized DEX. This is not a problem in itself, as it represents a great flash loan opportunity for price arbitrage between gWETH/gUSDC and WETH/USDC. A simple flash swap from Uniswap V3 to any authorized DEX would provide firm pricing on gWETH/gUSDC with almost the same quality as WETH/USDC on Uniswap V3.
+
 ## Economic Incentive
 
 Why would anyone provide gWETH/gUSDC liquidity and why would anyone swap or hold these tokens at all, instead of just WETH and USDC? The answer is: for economic incentive.
@@ -67,4 +69,18 @@ Note: Initially this protocol implements the list of callbacks as a regular Soli
 The data structure for holding the list of registered callbacks is implemented as a doubly-linked list sorted by price. A marker is placed pointing to the first item with trigger price at or below the pointed record. As the price moves due to activity on the authorized DEX, the marker is moved towards the new price, sweeping, executing and removing all callbacks in the list up to the new price. This is efficient, as rewards are collected for each callback execution.
 ## Use Cases
 
-Infinity protocol
+The Guardian Oracle-Keeper Tokens can have wide usage in DeFi. They solve a crucial problem of dangerous liquidation latency, which many protocols suffer from.
+
+New generation DeFi protocols try to alleviate this problem at other **adverse risks and costs**. For examnple the [Infinity Pools](https://infpools.medium.com/introducing-infinitypools-or-how-i-learned-to-stop-worrying-and-love-leverage-9b44fc8367b6) provide spot trading wih arbitrary leverage (marketed as infinite although limited by cost) by lending concentrated liquidity to the traders, for example a long leverage spot trader can borrow liquidity concentrated below the current price (the closer to the price, the greater the leverage). When the value of the long leveraged position falls below the limit, the borrowed concentrated LP position transforms itself covering for the loss. However, at what cost? The liquidity investor in this protocol is stuck holding an out-of-range concentrated LP position (not generating revenue), with potential not-so-impermanent loss. This consequently makes it costly for the trader. Not to mention the trader holding short LP, a very dangerous liability if that super concentrated liquidity starts producing profit for the lender, out of control for the trader in addition to his liquidation troubles.
+
+## Example use case: improve/fix the Infinity Pools Protocol
+
+Here is how an improved Infinity Pools protocol can work:
+
+- The trader wants to enter a position, for example, 10x leverage long WETH/USDC.
+
+- The liquidation price is set to slightly less than 10% below the current price (less than 10% in order to accommodate for liquidation penalty). A liquidation callback is registered with the gWETH/gUSDC Friend Guardian Oracle-Keeper Tokens with the above liquidation price as threshold. 
+
+- The protocol performs instant liquidation with no risk. Some slippage provision has to be accounted for in the liquidation penalty, of course. 
+
+The above fix removes the need for holding the dangerous concentrated liquidity positions for the liquidity provider, and also holding short LP for the trader and the extra cost.
