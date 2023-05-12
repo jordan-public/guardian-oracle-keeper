@@ -34,7 +34,7 @@ The Guardian Oracle-Keeper Tokens are ERC-20 tokens issued in pairs which we cal
 
 For example, we have a protocol in need of liquidations based on the ETH/USDC pricing. The function "liquidate(uint256 price)" has to be called when the price crosses the specified value. 
 
-Our protocol creates a pair of Guardian Oracle-Keeper Tokens called gWETH and gUSDC, each wrapping WETH (wrapped 1-to-1 ETH) and USDC respectively. Note that these new tokens are Friends, effectively aware of each other. Each one of them is tracking its total supply. Upon each transfer, the ratio of the total supplies is calculated, which determines their relative price. 
+Our protocol creates a pair of Guardian Oracle-Keeper Tokens called gWETH and gUSDC, each wrapping WETH (wrapped 1-to-1 ETH) and USDC respectively. Note that these new tokens are Friends, effectively aware of each other. Each one of them is tracking its total supply (well, the supply owned bu authorized DEXes to be precise as this is discussed below in the Safety section). Upon each transfer, the ratio of the total supplies is calculated, which determines their relative price. 
 
 Outside protocols can subscribe to one-time function callbacks for a fee. If the callback function would be responsible for re-subscribing again, which makes the process simple and flexible.
 
@@ -43,21 +43,28 @@ When the price changes, the tokens go through the list of subscriptions and call
 Now this pair of Guardian Oracle-Keeper Tokens can be deployed as liquidity on any DEX. As traders trade these tokens, they call the callbacks and perform liquidations on various protocols.
 ## Safety
 
-The pair of Guardian Oracle-Keeper Tokens can be abused in order to manipulate their relative prices. In order to prevent this, the Guardian Oracle-Keeper Tokens have a list of authorized owners, set upon their creation. This list includes specific DEXes (actually LP pairs on those DEXes). Any other owner can only mint these tokens in the exact proportion as the current price. The process goes as follows:
+The pair of Guardian Oracle-Keeper Tokens can be abused in order to manipulate their relative prices. In order to prevent this, the Guardian Oracle-Keeper Tokens have a list of authorized DEXes, set upon their creation. This list includes specific DEXes (actually LP pair contracts on those DEXes). Importantly, **only the tokens owned by these autorized DEXes count towards the ratio that determines the price**. The process goes as follows:
 
 - The Guardian Oracle-Keeper Token pair is created with a list of authorized owners (usually one LP at a DEX such as Unsiwap V3, V2, Sushiswap, etc.).
 
-- The depositors authorize the transfer of the underlying tokens for each wrapped Guardian Oracle-Keeper Token. For example, the depositor authorizes the gWETH contract to transfer WETH and gUSDC to transfer USDC on their behalf.
+- The depositors authorize the transfer of the underlying tokens for the desired wrapped Guardian Oracle-Keeper Token. For example, the depositor authorizes the gUSDC contract to transfer USDC on his behalf, and calls the "wrap" function which mints and equal amount of gUSDC tokens owned by the depositor.
 
-- The depositor consequently calls the "mint" function on one of the Friend Guardian Oracle-Keeper Tokens, which transfers in and wraps both tokens in the amounts proportional to the current price.
+- Then such pair can be deposited on (any, but relevantly) the authorized DEX as LP.
 
-- Then such pair can be deposited on the authorized DEX as LP.
+- The user which swaps one token can unwrap the received token from the DEX, in addition to receiving share of the rewards for performing callback services.
 
-- When a swap is performed, the destination tokens are immediately burned.
 ## Economic Incentive
 
+Why would anyone provide gWETH/gUSDC liquidity and why would anyone swap or hold these tokens at all, instead of just WETH and USDC? The answer is: for economic incentive.
+
+Each time Guardian Oracle-Keeper Tokens change hands through an authorized DEX, they potentially cross registered callback price thresholds. Consequently, those callbacks are called and fees are collected for this service. The fees accrue inside the DEX LP contracts, increasing their value. When the LP withdraws his liquidity, part of the profit from this operation is built in it.
+
+The incentive for the traders on the authorized DEX is also distributed from part of the callback service operation. Each time a callback is executed, the involved DEX trader immediately receives his reward.
 ## Optimal Data Structures
 
+Note: Initially this protocol implements the list of callbacks as a regular Solidity array (to complete the work in 1.5 days for the hackathon).
+
+The data structure for holding the list of registered callbacks is implemented as a doubly-linked list sorted by price. A marker is placed pointing to the first item with trigger price at or below the pointed record. As the price moves due to activity on the authorized DEX, the marker is moved towards the new price, sweeping, executing and removing all callbacks in the list up to the new price. This is efficient, as rewards are collected for each callback execution.
 ## Use Cases
 
 Infinity protocol
