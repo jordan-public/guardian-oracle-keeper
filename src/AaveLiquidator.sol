@@ -15,14 +15,17 @@ contract AaveLiquidator is IGuarded {
         guardian = g;
     }
 
+    receive() external payable {} // Can get ETH for reward payments
+
     function registerCallback(uint256 priceThreshold, bool descend, uint256 reward) external {
         guardian.registerCallback{value: reward}(this, priceThreshold, descend);
     }
 
     function priceAction(uint256 balanceA, uint256 balanceB) external {
         (IERC20 tokenA, IERC20 tokenB) = guardian.getUnderlyingTokenPair();
-        uint256 newPrice = ((((balanceB * 10**tokenA.decimals()) / balanceA)  * 1 ether) / 10**tokenB.decimals()); // 18 decimals
+        uint256 newPrice = guardian.getPrice(); // 18 decimals
         emit PriceChanged(lastPrice, newPrice);
         lastPrice = newPrice;
+        priceActionCount += 1;
     }
 }

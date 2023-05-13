@@ -2,6 +2,7 @@
 pragma solidity ^0.8.13;
 
 import "forge-std/interfaces/IERC20.sol";
+import "forge-std/console.sol";
 import "./interfaces/IGuarded.sol";
 import "./interfaces/IGuardian.sol";
 import "./GuardianToken.sol";
@@ -41,25 +42,28 @@ contract Guardian is IGuardian {
     }
 
     function registerCallback(IGuarded guarded, uint256 priceTarget, bool descend) external payable {
+        lastPrice = getPrice();
         targets.push(TTarget(guarded, msg.value, priceTarget, descend));
     }
 
     // Return value always in 18 decimals
-    function getPrice() internal view returns (uint256) {
-        return (((1 ether * gTokenB.balanceOf(authorizedPool)) / gTokenA.balanceOf(authorizedPool)) * 10**gTokenA.decimals()) / 10**gTokenB.decimals();
+    function getPrice() public view returns (uint256 price) {
+        if (gTokenB.balanceOf(authorizedPool) == 0) price = 0;
+        else price = (1 ether * gTokenA.balanceOf(authorizedPool) * 10**gTokenB.decimals()) / (gTokenB.balanceOf(authorizedPool) * 10**gTokenA.decimals());
     }
 
-    function canTrigger(TTarget memory t) internal view returns (bool) {
+    function canTrigger(TTarget memory t) internal returns (bool yes) {
         if (lastPrice == 0) return false;
         else {
             uint256 price = getPrice();
-            return t.descend ? price < lastPrice && price < t.priceTarget : price > lastPrice && price > t.priceTarget;
+            yes = t.descend ? price < lastPrice && price < t.priceTarget : price > lastPrice && price > t.priceTarget;
+            lastPrice = price;
         }
     }
 
-    function transferAction(address sender, address recipient) external {
+    function transferAction(address sender, address /*recipient*/) external {
         require(msg.sender == address(gTokenA) || msg.sender == address(gTokenB), "Unauthorized");
-        if (! (sender == authorizedPool || recipient == authorizedPool)) return; // No action
+        if (sender != authorizedPool) return; // No action
         isOdd = ! isOdd;
         if (isOdd) return; // Both Friend Guardian Tokens must transfer for correct price calculation
         // !!! This needs improvement - use doubly linked list instead of an array (to do after the hackathon)

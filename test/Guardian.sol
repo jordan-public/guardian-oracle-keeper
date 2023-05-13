@@ -67,15 +67,19 @@ contract GuardianTest is Test {
         // Create a Guardian target
         AaveLiquidator l = new AaveLiquidator(guardian);
         payable(address(l)).transfer(2 ether); // Fund the liquidator, so he can pay the reward
-        l.registerCallback(9, true, 1 ether); // Offer reward of 1 ether for calling Aave liquidation
+        l.registerCallback(9 * 10**8, true, 1 ether); // Offer reward of 1 ether for calling Aave liquidation on price drop below 0.9 * 10**-9 gPEPE/gGHO
 
         // Observe the amount of price actions
         assertEq(l.priceActionCount(), 0, "No actions yet");
 
+        console.log("gGHO pool balance:", gGHO.balanceOf(address(pool)));
+        console.log("gPEPE pool balance:", gPEPE.balanceOf(address(pool)));
         // Trade on Uniswap
         gPEPE.transfer(address(pool), 1 * 10**9 * 10**gPEPE.decimals()); // 1 billion gPEPE
-        pool.swap(1 * 10**(gGHO.decimals()-1), 0, address(this), ""); // for 0.5 gGHO
+        pool.swap(5 * 10**(gGHO.decimals()-1), 0, address(this), ""); // for 0.5 gGHO
         // Now the pool has 0.5 gGHO and 2 billion PEPE - the price has dropped
+        console.log("gGHO pool balance:", gGHO.balanceOf(address(pool)));
+        console.log("gPEPE pool balance:", gPEPE.balanceOf(address(pool)));
 
         // Observe liquidation on Aave
         assertEq(l.priceActionCount(), 1, "We should receive a single price action (not 2)");
