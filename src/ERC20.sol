@@ -33,11 +33,7 @@ contract ERC20 is IERC20 {
         return true;
     }
 
-    function transferFrom(
-        address sender,
-        address recipient,
-        uint256 amount
-    ) external returns (bool) {
+    function transferFrom(address sender, address recipient, uint256 amount) external returns (bool) {
         require(balanceOf[sender] >= amount, "Insufficient funds");
         require(allowance[sender][msg.sender] >= amount, "Unauthorized");
         allowance[sender][msg.sender] -= amount;

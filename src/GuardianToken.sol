@@ -1,12 +1,14 @@
-// SPDX-License-Identifier: UNLICENSED
+// SPDX-License-Identifier: BUSL-1.1
 pragma solidity ^0.8.13;
 
 import "forge-std/interfaces/IERC20.sol";
 import "./interfaces/IGuarded.sol";
 import "./interfaces/IGuardian.sol";
+import "./interfaces/IGuardianToken.sol";
 
-contract GuardianToken is IERC20, IGuardian {
-    IERC20 underlyingToken;
+contract GuardianToken is IGuardianToken {
+    IERC20 public underlyingToken;
+    IGuardian public coordinator;
 
     mapping(address => uint256) public balanceOf;
     mapping(address => mapping(address => uint256)) public allowance;
@@ -15,10 +17,7 @@ contract GuardianToken is IERC20, IGuardian {
     uint8 public decimals;
     uint256 public totalSupply; // = 0
 
-    mapping (address => bool) isAuthorizedPool;
-    IGuarded[] public toGuard;
-
-    constructor (IERC20 toWrap, address[] memory authorizedPools) {
+    constructor (IERC20 toWrap) {
         underlyingToken = toWrap;
         name = "g";
         symbol = "Guardian";
@@ -26,8 +25,7 @@ contract GuardianToken is IERC20, IGuardian {
         symbol = string(abi.encodePacked(symbol," ",toWrap.symbol()));
         decimals = toWrap.decimals();
         // no need totalSupply = 0;
-        for (uint256 i = 0; i < authorizedPools.length; i++)
-            isAuthorizedPool[authorizedPools[i]] = true;
+        coordinator = IGuardian(msg.sender);
     }
 
     function wrap(uint256 amount) external {
@@ -41,10 +39,6 @@ contract GuardianToken is IERC20, IGuardian {
         underlyingToken.transfer(msg.sender, amount);
     }
 
-    function registerCallback(IGuarded guarded) external {
-        toGuard.push(guarded);
-    }
-
     function approve(address spender, uint256 amount) external returns (bool) {
         allowance[msg.sender][spender] = amount;
         emit Approval(msg.sender, spender, amount);
@@ -55,20 +49,18 @@ contract GuardianToken is IERC20, IGuardian {
         require(balanceOf[msg.sender] >= amount, "Insufficient funds");
         balanceOf[msg.sender] -= amount;
         balanceOf[recipient] += amount;
+        coordinator.transferAction(msg.sender, recipient);
         emit Transfer(msg.sender, recipient, amount);
         return true;
     }
 
-    function transferFrom(
-        address sender,
-        address recipient,
-        uint256 amount
-    ) external returns (bool) {
+    function transferFrom(address sender, address recipient, uint256 amount) external returns (bool) {
         require(balanceOf[msg.sender] >= amount, "Insufficient funds");
         require(allowance[sender][msg.sender] >= amount, "Unauthorized");
         allowance[sender][msg.sender] -= amount;
         balanceOf[sender] -= amount;
         balanceOf[recipient] += amount;
+        coordinator.transferAction(sender, recipient);
         emit Transfer(sender, recipient, amount);
         return true;
     }
