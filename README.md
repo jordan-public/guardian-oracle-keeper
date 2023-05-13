@@ -41,7 +41,7 @@ What if we create special tokens? Somehow, when it's price changes on the existi
 
 The Guardian Oracle-Keeper Protocol is implemented as a pair of Guardian Tokens.
 
-The Guardian Tokens are ERC20 tokens issued in pairs which we call Friends. They wrap existing ERC20 tokens and provide additional functionality. 
+The Guardian Tokens are ERC20 tokens issued in pairs which we call Friends. They wrap existing ERC20 tokens and provide additional functionality. In a way, they are indistinguishable to the liquidity pool from any other tokens, thus acting as Trojan Horses.
 
 For example, we have a protocol in need of liquidations based on the ETH/USDC pricing. The function "liquidate(uint256 price)" has to be called when the price crosses the specified value. 
 
