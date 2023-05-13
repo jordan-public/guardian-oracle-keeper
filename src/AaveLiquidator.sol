@@ -4,14 +4,19 @@ pragma solidity ^0.8.13;
 import "./interfaces/IGuarded.sol";
 import "./Guardian.sol";
 
-contract SampleGuarded is IGuarded {
+contract AaveLiquidator is IGuarded {
     uint256 lastPrice; // = 0
     IGuardian guardian;
+    uint256 public priceActionCount; // = 0;
 
     event PriceChanged(uint256 oldPrice, uint256 newPrice);
 
     constructor (IGuardian g) {
         guardian = g;
+    }
+
+    function registerCallback(uint256 priceThreshold, bool descend, uint256 reward) external {
+        guardian.registerCallback{value: reward}(this, priceThreshold, descend);
     }
 
     function priceAction(uint256 balanceA, uint256 balanceB) external {

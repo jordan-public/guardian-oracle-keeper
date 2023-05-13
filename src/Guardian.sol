@@ -7,6 +7,7 @@ import "./interfaces/IGuardian.sol";
 import "./GuardianToken.sol";
 
 contract Guardian is IGuardian {
+    address owner;
     address authorizedPool;
     bool isOdd; // = false
     struct TTarget {
@@ -20,9 +21,14 @@ contract Guardian is IGuardian {
     IGuardianToken gTokenB;
     uint256 lastPrice; // = 0
 
-    constructor (IERC20 tokenA, IERC20 tokenB, address pool) {
+    constructor (IERC20 tokenA, IERC20 tokenB) {
+        owner = tx.origin; // Note: This breaks with ERC-4337. Deal with it later, by recording the owner of the creator!!!
         gTokenA = new GuardianToken(tokenA);
         gTokenB = new GuardianToken(tokenB);
+    }
+
+    function setAuthorizedPool(address pool) external {
+        require(tx.origin == owner, "Unauthorized"); // Note: This breaks with ERC-4337. Deal with it later, by recording the owner of the creator!!!
         authorizedPool = pool;
     }
 
@@ -44,7 +50,8 @@ contract Guardian is IGuardian {
     }
 
     function canTrigger(TTarget memory t) internal view returns (bool) {
-        if (lastPrice != 0) {
+        if (lastPrice == 0) return false;
+        else {
             uint256 price = getPrice();
             return t.descend ? price < lastPrice && price < t.priceTarget : price > lastPrice && price > t.priceTarget;
         }

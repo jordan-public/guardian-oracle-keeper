@@ -5,5 +5,5 @@ import "forge-std/interfaces/IERC20.sol";
 import "./IGuardian.sol";
 
 interface IGuardianFactory {
-    function createGuardian(IERC20 tokenA, IERC20 tokenB, address authorizedPool) external returns (IGuardian);
+    function createGuardian(IERC20 tokenA, IERC20 tokenB) external returns (IGuardian);
 }

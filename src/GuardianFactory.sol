@@ -6,7 +6,7 @@ import "./Guardian.sol";
 import "./interfaces/IGuardianFactory.sol";
 
 contract GuardianFactory is IGuardianFactory {
-    function createGuardian(IERC20 tokenA, IERC20 tokenB, address authorizedPool) external returns (IGuardian) {
-        return new Guardian(tokenA, tokenB, authorizedPool);
+    function createGuardian(IERC20 tokenA, IERC20 tokenB) external returns (IGuardian) {
+        return new Guardian(tokenA, tokenB);
     }
 }

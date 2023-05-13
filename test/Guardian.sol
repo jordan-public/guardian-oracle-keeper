@@ -8,6 +8,9 @@ import "../src/interfaces/IGuardian.sol";
 import "../src/interfaces/IGuarded.sol";
 import "../src/interfaces/IGuardianToken.sol";
 import "../src/ERC20.sol";
+import "../src/mock/MockUniswapV2Factory.sol";
+import "../src/mock/interfaces/IUniswapV2Pair.sol";
+import "../src/AaveLiquidator.sol";
 
 contract GuardianTest is Test {
     // Test accounts from passphrase in env (not in repo)
@@ -39,25 +42,42 @@ contract GuardianTest is Test {
         PEPE = new ERC20("Mock PEPE", "PEPE", 18, 10**15 * 10**18); // 1 quadrillion total supply
         console.log("Test PEPE address: ", address(PEPE));
 
-        // Create mock Uniswap V2 liquidity pool
-        address pool;
-        
         // Create Guardian
-        IGuardian guardian = factory.createGuardian(GHO, PEPE, pool);
+        IGuardian guardian = factory.createGuardian(GHO, PEPE);
 
         // Wrap tokens
         (gGHO, gPEPE) = guardian.getTokenPair();
         GHO.approve(address(gGHO), type(uint256).max);
         PEPE.approve(address(gPEPE), type(uint256).max);
-        gGHO.wrap(1 * 10**GHO.decimals()); // 1 GHO
-        gPEPE.wrap(1 * 10**9 * 10**gPEPE.decimals()); // 1 billion GHO
+        gGHO.wrap(10 * 10**GHO.decimals()); // 10 GHO
+        gPEPE.wrap(10 * 10**9 * 10**gPEPE.decimals()); // 10 billion GHO
 
-        // Create mock Uniswap liquidity
+        // Create mock Uniswap V2 liquidity pool
+        IUniswapV2Factory f = new MockUniswapV2Factory();
+        IUniswapV2Pair pool = IUniswapV2Pair(f.createPair(address(gGHO), address(gPEPE)));
+        // Put liquidity in the pool
+        gGHO.transfer(address(pool), 1 * 10**gGHO.decimals()); // 1 gGHO
+        gPEPE.transfer(address(pool), 1 * 10**9 * 10**gPEPE.decimals()); // 1 billion gPEPE
 
+        // Authorize pool
+        guardian.setAuthorizedPool(address(pool));
+        
         // Create mock Aave position
 
-        // Trade on Uniswap
+        // Create a Guardian target
+        AaveLiquidator l = new AaveLiquidator(guardian);
+        payable(address(l)).transfer(2 ether); // Fund the liquidator, so he can pay the reward
+        l.registerCallback(9, true, 1 ether); // Offer reward of 1 ether for calling Aave liquidation
 
-        // Observe liquidation
+        // Observe the amount of price actions
+        assertEq(l.priceActionCount(), 0, "No actions yet");
+
+        // Trade on Uniswap
+        gPEPE.transfer(address(pool), 1 * 10**9 * 10**gPEPE.decimals()); // 1 billion gPEPE
+        pool.swap(1 * 10**(gGHO.decimals()-1), 0, address(this), ""); // for 0.5 gGHO
+        // Now the pool has 0.5 gGHO and 2 billion PEPE - the price has dropped
+
+        // Observe liquidation on Aave
+        assertEq(l.priceActionCount(), 1, "We should receive a single price action (not 2)");
     }
 }
