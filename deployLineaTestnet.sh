@@ -7,8 +7,3 @@ source .env
 
 # To deploy and verify our contract
 forge script script/DeployLineaTestnet.s.sol:Deploy --slow --legacy --rpc-url "https://rpc.goerli.linea.build" --sender $SENDER --private-key $PRIVATE_KEY --broadcast -vvvv
-
-source push_artifacts.sh "DeployLineaTestnet.s.sol/59140"
-
-# cd web
-# npm run build

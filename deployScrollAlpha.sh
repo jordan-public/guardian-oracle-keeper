@@ -9,6 +9,3 @@ source .env
 forge script script/DeployScrollAlpha.s.sol:Deploy --legacy --rpc-url "https://alpha-rpc.scroll.io/l2" --sender $SENDER --private-key $PRIVATE_KEY --broadcast -vvvv
 
 source push_artifacts.sh "DeployScrollAlpha.s.sol/534353"
-
-# cd web
-# npm run build
