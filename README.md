@@ -1,12 +1,15 @@
 # The Guardian Oracle-Keeper Protocol
 
+## Demo
+
+See [this link](demo/README.md) for video and demo instructions.
 ## Abstract
 
 I developed a novel on-chain Keeper protocol which reacts upon price actions immediately, within the same transaction. 
 
 DeFi protocols have suffered issues from latent Oracles and slow reaction by the Liquidation Keepers. **No more!** This protocol allows DeFi protocols to immediately react to price actions, as soon as they occur on-chain.
 
-The protocol mechanism is implemented as a pair of Guardian Tokens which can wrap any pair of ERC20 tokens and deploy them at one or more Automated Market Maker DEXes. These tokens intercept the "transfer" functions and reverse-calculate the price as soon as transactions occur, and immediately call registered callbacks. These callbacks are typically liquidation or rebalancing operations performed by the DeFi protocols utilizing the Guardian Oracle-Keeper Protocol.
+The protocol mechanism is implemented as a pair of Guardian Tokens which can wrap any pair of ERC-20 tokens and deploy them at one or more Automated Market Maker DEXes. These tokens intercept the "transfer" functions and reverse-calculate the price as soon as transactions occur, and immediately call registered callbacks. These callbacks are typically liquidation or rebalancing operations performed by the DeFi protocols utilizing the Guardian Oracle-Keeper Protocol.
 
 
 ## Intruduction
@@ -41,7 +44,7 @@ What if we create special tokens? Somehow, when it's price changes on the existi
 
 The Guardian Oracle-Keeper Protocol is implemented as a pair of Guardian Tokens.
 
-The Guardian Tokens are ERC20 tokens issued in pairs which we call Friends. They wrap existing ERC20 tokens and provide additional functionality. In a way, they are indistinguishable to the liquidity pool from any other tokens, thus acting as Trojan Horses.
+The Guardian Tokens are ERC-20 tokens issued in pairs which we call Friends. They wrap existing ERC-20 tokens and provide additional functionality. In a way, they are indistinguishable to the liquidity pool from any other tokens, thus acting as Trojan Horses.
 
 For example, we have a protocol in need of liquidations based on the ETH/USDC pricing. The function "liquidate(uint256 price)" has to be called when the price crosses the specified value. 
 
@@ -68,7 +71,7 @@ Let us consider another issue: low gWETH/gUSDC liquidity on the authorized DEX. 
 
 ## Price Calculation
 
-Once a transfer in or out of an authorized DEX pool is detected (this is simply part of the "transfer" and "transferFrom" functions of the ERC20 tokens), the new price has to be calculated. There are several choices, and here is the summary:
+Once a transfer in or out of an authorized DEX pool is detected (this is simply part of the "transfer" and "transferFrom" functions of the ERC-20 tokens), the new price has to be calculated. There are several choices, and here is the summary:
 
 ### Latest Price Calculation - AMM Liquidity Pool Reverse Engineering
 
