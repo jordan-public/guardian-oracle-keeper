@@ -7,6 +7,6 @@ import "./IGuardianToken.sol";
 interface IGuardian {
     function getTokenPair() external view returns (IGuardianToken tokenA, IGuardianToken tokenB);
     function getUnderlyingTokenPair() external view returns (IERC20 tokenA, IERC20 tokenB);
-    function registerCallback(IGuarded guarded) external;
+    function registerCallback(IGuarded guarded, uint256 priceTarget, bool descend) external payable;
     function transferAction(address sender, address recipient) external;
 }

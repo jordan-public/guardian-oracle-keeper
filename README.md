@@ -114,7 +114,6 @@ Note: Initially this protocol implements the list of callbacks as a regular Soli
 
 The data structure for holding the list of registered callbacks is implemented as a doubly-linked list sorted by price. A marker is placed pointing to the first item with trigger price at or below the pointed record. As the price moves due to activity on the authorized DEX, the marker is moved towards the new price, sweeping, executing and removing all callbacks in the list up to the new price. This is efficient, as rewards are collected for each callback execution.
 
-In addition, the list of authorized DEX pools is implemented as Solidity map of pool addresses to Boolean. When a transfer is made, Guardian Token "transfer" and "transferFrom" check who performed the transfer (msg.sender is the address of the pool) and check in the map whether that address is an authorized DEX pool. If so, the price action is checked whether to trigger any of the callbacks in the doubly linked list above.
 ## Use Cases
 
 The Guardian Tokens can have wide usage in DeFi. They solve a crucial problem of dangerous liquidation latency, which many protocols suffer from. Not limited to this, the usages would be:

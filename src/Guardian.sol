@@ -7,38 +7,64 @@ import "./interfaces/IGuardian.sol";
 import "./GuardianToken.sol";
 
 contract Guardian is IGuardian {
-    mapping (address => bool) isAuthorizedPool;
-    IGuarded[] public toGuard;
-    IGuardianToken[2] sourceTokens;
+    address authorizedPool;
+    bool isOdd; // = false
+    struct TTarget {
+        IGuarded toGuard;
+        uint256 reward;
+        uint256 priceTarget;
+        bool descend;
+    }
+    TTarget[] public targets; // !!! This needs improvement - use doubly linked list instead of an array (to do after the hackathon)
+    IGuardianToken gTokenA;
+    IGuardianToken gTokenB;
+    uint256 lastPrice; // = 0
 
-    constructor (IERC20 tokenA, IERC20 tokenB, address[] memory authorizedPools) {
-        sourceTokens[0] = new GuardianToken(tokenA);
-        sourceTokens[1] = new GuardianToken(tokenB);
-        for (uint256 i = 0; i < authorizedPools.length; i++)
-            isAuthorizedPool[authorizedPools[i]] = true;
+    constructor (IERC20 tokenA, IERC20 tokenB, address pool) {
+        gTokenA = new GuardianToken(tokenA);
+        gTokenB = new GuardianToken(tokenB);
+        authorizedPool = pool;
     }
 
     function getTokenPair() external view returns (IGuardianToken tokenA, IGuardianToken tokenB) {
-        return (sourceTokens[0], sourceTokens[1]);
+        return (gTokenA, gTokenB);
     }
 
     function getUnderlyingTokenPair() external view returns (IERC20 tokenA, IERC20 tokenB) {
-        return (sourceTokens[0].underlyingToken(), sourceTokens[1].underlyingToken());
+        return (gTokenA.underlyingToken(), gTokenB.underlyingToken());
     }
 
-    function registerCallback(IGuarded guarded) external {
-        toGuard.push(guarded);
+    function registerCallback(IGuarded guarded, uint256 priceTarget, bool descend) external payable {
+        targets.push(TTarget(guarded, msg.value, priceTarget, descend));
+    }
+
+    // Return value always in 18 decimals
+    function getPrice() internal view returns (uint256) {
+        return (((1 ether * gTokenB.balanceOf(authorizedPool)) / gTokenA.balanceOf(authorizedPool)) * 10**gTokenA.decimals()) / 10**gTokenB.decimals();
+    }
+
+    function canTrigger(TTarget memory t) internal view returns (bool) {
+        if (lastPrice != 0) {
+            uint256 price = getPrice();
+            return t.descend ? price < lastPrice && price < t.priceTarget : price > lastPrice && price > t.priceTarget;
+        }
     }
 
     function transferAction(address sender, address recipient) external {
-        require(msg.sender == address(sourceTokens[0]) || msg.sender == address(sourceTokens[1]), "Unauthorized");
-require(false, "Not implemented - check conditions - both tokens need action");
-        if (! (isAuthorizedPool[sender] || isAuthorizedPool[recipient])) return; // No action
-        // !!! This needs improvement - use doubly linked list instead of an array (to do after the hackathon
-        for (uint256 i = 0; i < toGuard.length; i++) {
-            if (address(toGuard[i]) != address(0)) {
-                toGuard[i].priceAction(sourceTokens[0].balanceOf(msg.sender), sourceTokens[1].balanceOf(msg.sender));
-                delete(toGuard[i]);
+        require(msg.sender == address(gTokenA) || msg.sender == address(gTokenB), "Unauthorized");
+        if (! (sender == authorizedPool || recipient == authorizedPool)) return; // No action
+        isOdd = ! isOdd;
+        if (isOdd) return; // Both Friend Guardian Tokens must transfer for correct price calculation
+        // !!! This needs improvement - use doubly linked list instead of an array (to do after the hackathon)
+        for (uint256 i = 0; i < targets.length; i++) {
+            if (address(targets[i].toGuard) != address(0) && canTrigger(targets[i])) {
+                // Optimistically pay the caller
+                uint256 toPay = targets[i].reward;
+                targets[i].reward = 0; // Empty first to avoid reentry attack
+                payable(tx.origin).transfer(toPay); // Optimistically
+                // Now execute the price action
+                targets[i].toGuard.priceAction(gTokenA.balanceOf(msg.sender), gTokenB.balanceOf(msg.sender));
+                delete(targets[i]);
             }
         }    
     }
