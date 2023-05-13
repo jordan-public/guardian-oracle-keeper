@@ -107,7 +107,7 @@ Why would anyone provide gWETH/gUSDC liquidity and why would anyone swap or hold
 
 Each time Guardian Tokens change hands through an authorized DEX, they potentially cross registered callback price thresholds. Consequently, those callbacks are called and fees are collected for this service. The fees accrue inside the DEX LP contracts, increasing their value. When the LP withdraws his liquidity, part of the profit from this operation is built in it.
 
-The incentive for the traders on the authorized DEX is also distributed from part of the callback service operation. Each time a callback is executed, the involved DEX trader immediately receives his reward.
+The incentive for the traders on the authorized DEX is also distributed from part of the callback service operation. Each time a callback is executed, the involved DEX trader optimistically receives his reward before even the Guardian callback is executed. This pays for the transaction (gas) fees and more, all in advance.
 ## Optimal Data Structures
 
 Note: Initially this protocol implements the list of callbacks as a regular Solidity array (to complete the work in 1.5 days for the hackathon).
