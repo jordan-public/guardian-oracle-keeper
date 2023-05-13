@@ -24,6 +24,8 @@ broadcast/DeployZkevmTestnet.s.sol/*/*
 !broadcast/DeployZkevmTestnet.s.sol/*/run-latest.json
 broadcast/DeployMantleTestnet.s.sol/*/*
 !broadcast/DeployMantleTestnet.s.sol/*/run-latest.json
+broadcast/DeployLineaTestnet.s.sol/*/*
+!broadcast/DeployLineaTestnet.s.sol/*/run-latest.json
 # Ignores development broadcast logs
 # !/broadcast
 # /broadcast/*/31337/
