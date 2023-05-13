@@ -15,10 +15,6 @@ import "../src/AaveLiquidator.sol";
 contract GuardianTest is Test {
     // Test accounts from passphrase in env (not in repo)
     address constant account0 = 0x17eE56D300E3A0a6d5Fd9D56197bFfE968096EdB;
-    address constant account1 = 0xFE6A93054b240b2979F57e49118A514F75f66D4e;
-    address constant account2 = 0xcEeEa627dDe5EF73Fe8625e146EeBba0fdEB00bd;
-    address constant account3 = 0xEf5b07C0cb002853AdaD2B2E817e5C66b62d34E6;
-    address constant account4 = 0x895652cB06D430D45662291b394253FF97dD8B9E;
 
     IGuardianFactory factory;
 
@@ -62,25 +58,19 @@ contract GuardianTest is Test {
         // Authorize pool
         guardian.setAuthorizedPool(address(pool));
         
-        // Create mock Aave position
-
         // Create a Guardian target
         AaveLiquidator l = new AaveLiquidator(guardian);
         payable(address(l)).transfer(2 ether); // Fund the liquidator, so he can pay the reward
-        l.registerCallback(9 * 10**8, true, 1 ether); // Offer reward of 1 ether for calling Aave liquidation on price drop below 0.9 * 10**-9 gPEPE/gGHO
+        l.registerCallback(1 ether); // Offer reward of 1 ether for calling Aave liquidation on price drop below 0.9 * 10**-9 gPEPE/gGHO
 
         // Observe the amount of price actions
         assertEq(l.priceActionCount(), 0, "No actions yet");
 
-        console.log("gGHO pool balance:", gGHO.balanceOf(address(pool)));
-        console.log("gPEPE pool balance:", gPEPE.balanceOf(address(pool)));
         // Trade on Uniswap
         gPEPE.transfer(address(pool), 1 * 10**9 * 10**gPEPE.decimals()); // 1 billion gPEPE
         pool.swap(5 * 10**(gGHO.decimals()-1), 0, address(this), ""); // for 0.5 gGHO
         // Now the pool has 0.5 gGHO and 2 billion PEPE - the price has dropped
-        console.log("gGHO pool balance:", gGHO.balanceOf(address(pool)));
-        console.log("gPEPE pool balance:", gPEPE.balanceOf(address(pool)));
-
+        
         // Observe liquidation on Aave
         assertEq(l.priceActionCount(), 1, "We should receive a single price action (not 2)");
     }
