@@ -6,4 +6,5 @@
 source .env
 
 # To deploy and verify our contract
-forge script script/DeployLineaTestnet.s.sol:Deploy --slow --rpc-url "https://rpc.goerli.linea.build" --sender $SENDER --private-key $PRIVATE_KEY --broadcast -vvvv
+# forge script script/DeployLineaTestnet.s.sol:Deploy --slow --rpc-url "https://rpc.goerli.linea.build" --sender $SENDER --private-key $PRIVATE_KEY --broadcast -vvvv
+forge script script/DeployLineaTestnet.s.sol:Deploy --slow --rpc-url "https://consensys-zkevm-goerli-prealpha.infura.io/v3/$INFURA_KEY" --sender $SENDER --private-key $PRIVATE_KEY --broadcast -vvvv

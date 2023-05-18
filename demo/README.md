@@ -26,6 +26,6 @@ Mantle testnet: 0x28712c0521cd2950fc6bdae410e0726f8f6f9165
 
 Scroll Alpha testnet: 0x47a9ebaf9b3c8ae77251249c3ab47faf0bd46a2e
 
-Linea testnet: 
+Linea testnet: 0xe7a044e19d5afbb2957740a3cdc3e295f152cf7e 
 
 Neon testnet: 
