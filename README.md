@@ -1,3 +1,17 @@
+[This project](https://ethglobal.com/showcase/guardian-oracle-keeper-protocol-rpcws) won the following prizes at the [ETHGlobal Lisbon 2023](https://ethglobal.com/events/lisbon) hackathon:
+
+🏊 [Polygon — Build on Polygon](https://ethglobal.com/showcase/guardian-oracle-keeper-protocol-rpcws)
+
+🛠️ [Uniswap Foundation — Best Developer Tooling](https://ethglobal.com/showcase/guardian-oracle-keeper-protocol-rpcws)
+
+5️⃣ [Aave Grants DAO — Built with GHO](https://ethglobal.com/showcase/guardian-oracle-keeper-protocol-rpcws)
+
+🏊 [Scroll — Deploy a Smart Contract](https://ethglobal.com/showcase/guardian-oracle-keeper-protocol-rpcws)
+
+🥈 [Neon Foundation - Best Use](https://ethglobal.com/showcase/guardian-oracle-keeper-protocol-rpcws)
+
+🥇 [Mantle — Best Use](https://ethglobal.com/showcase/guardian-oracle-keeper-protocol-rpcws)
+
 # The Guardian Oracle-Keeper Protocol
 
 ## Demo
