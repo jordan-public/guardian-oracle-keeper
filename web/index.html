@@ -15,17 +15,10 @@
             padding: 20px 0;
             text-align: center;
         }
-        .header img {
-            width: 200px;
-            height: auto;
-        }
         .content {
             padding: 20px;
             max-width: 800px;
             margin: 0 auto;
-        }
-        .section {
-            margin-bottom: 20px;
         }
         .prizes-section {
         width: 80%;
@@ -39,174 +32,35 @@
 <body>
     <div class="header">
         <img src="Logo.png?raw=true" alt="Guardian Oracle-Keeper Protocol Logo" />
-        <h1>Novel on-chain Keeper protocol which reacts upon price actions immediately, within the same transaction</h1>
+        <h1>Guardian Oracle-Keeper Protocol: React to price changes instantly</h1>
     </div>
 
     <div class="content">
-        <div class="section">
-            <h2>Abstract</h2>
-            <p>
-                We introduce a novel on-chain Keeper protocol which reacts upon price actions immediately, within the same transaction. 
+        <h2>What is it?</h2>
+        <p>
+            The Guardian Oracle-Keeper Protocol is a new on-chain Keeper protocol. It reacts immediately to price changes, within the same transaction. The protocol provides a solution for DeFi protocols to respond swiftly to price actions.
+        </p>
 
-                DeFi protocols have suffered issues from latent Oracles and slow reaction by the Liquidation Keepers. **No more!** This protocol allows DeFi protocols to immediately react to price actions, as soon as they occur on-chain.
-                
-                The protocol mechanism is implemented as a pair of Guardian Tokens which can wrap any pair of ERC-20 tokens and deploy them at one or more Automated Market Maker DEXes. These tokens intercept the "transfer" functions and reverse-calculate the price as soon as transactions occur, and immediately call registered callbacks. These callbacks are typically liquidation or rebalancing operations performed by the DeFi protocols utilizing the Guardian Oracle-Keeper Protocol.
-            </p>
-        </div>
+        <h2>How does it work?</h2>
+        <p>
+            The protocol uses a pair of Guardian Tokens that can wrap any pair of ERC-20 tokens. These tokens intercept the "transfer" function and calculate the price as soon as transactions occur, triggering immediate atomic responses such as liquidation or rebalancing operations.
+        </p>
 
-        <div class="section">
-            <h2>Introduction</h2>
-            <p>
-                Many DeFi protocols depend on Oracles, Keepers and Liquidators. 
-                <list>
-                    <li>Oracles provide data external to the protocols. External oracles, such as ChainLink reliably in a decentralized manner bring off-chain data and record it on-chain. However, on-chain oracles exist, too. For example Uniswap can be used as on-chain oracle. It even provides for recording a trail of prices to avoid flash loan or flash swap attacks.</li>
-                    
-                    <li>Keepers watch for certain off-chain or on-chain events and call on-chain contracts to perform an action triggered by such events.</li>
-                    
-                    <li>Liquidators make sure all DeFi participants are solvent and can deliver on their financial commitments to their counter-parties. Participants approaching insolvency according to prescribed rules should be liquidated by Liquidators, parties that are able to remedy their insolvency, typically by taking over their positions in exchange for reward charged as penalty to the liquidated participant.</li>
-                </list>
-            </p>
-        </div>
+        <h2>Why is it important?</h2>
+        <p>
+            Current DeFi protocols suffer from slow reactions by Liquidation Keepers and latency issues with Oracles. The Guardian Oracle-Keeper Protocol resolves these problems by enabling DeFi protocols to react instantaneously to price actions.
+        </p>
 
-        <div class="section">
-            <h2>Problems</h2>
-            <p>
-                <list>
-                    <li>All above seems in order, but there are numerous problems:
+        <h2>What are the benefits?</h2>
+        <p>
+            The Guardian Oracle-Keeper Protocol provides incentives for traders and liquidity providers. They can collect fees from service operations, which enhance the value of their liquidity pool contracts and pay for their transaction fees.
+        </p>
 
-                    <li>Keepers may not react timely. This could cause insolvent positions to damage the protocol beyond repair, at the cost of the honest participants.</li>
-                
-                    <li>Liquidators triggered by Keepers may introduce additional risk, as they may reluctantly decide not to liquidate certain positions, in favor of others in order to maximize their own rewards.</li>
-                
-                    <li>Off-chain oracles can lag. Especially in high congestion situations, cost can cause the off-chain oracles to delay their delivery. In addition, off-chain oracles are not instant.</li>
-                
-                    <li>On-chain oracles are instant as they reflect current trading, but they still need external keepers to trigger liquidations, so this becomes a moot point.</li>
-                </list>
-            </p>
-        </div>
-
-        <div class="section">
-            <h2>What if?</h2>
-            <p>
-                What if the Decentralized Exchanges (DEX) can deliver callbacks based on trading events? That would be nice, but they don't. We can build a DEX which does, but who would use our new DEX? If there is no liquidity on it, it would be unreliable, and we are back to the marketing and market share problem. 
-                <br/>
-                <br/>
-                What if we create special tokens? Somehow, when it's price changes on the existing DEXes it would call a registered callback function to perform liquidations or similar business. Enter the Guardian Tokens:            </p>
-        </div>
-
-        <div class="section">
-            <h2>Guardian Oracle-Keeper Protocol</h2>
-            <p>
-                The Guardian Oracle-Keeper Protocol is implemented as a pair of Guardian Tokens.
-                <br/>
-                <br/>
-                The Guardian Tokens are ERC-20 tokens issued in pairs which we call Friends. They wrap existing ERC-20 tokens and provide additional functionality. In a way, they are indistinguishable to the liquidity pool from any other tokens, thus acting as Trojan Horses.
-                <br/>
-                <br/>
-                For example, we have a protocol in need of liquidations based on the ETH/USDC pricing. The function "liquidate(uint256 price)" has to be called when the price crosses the specified value. 
-                <br/>
-                <br/>
-                Our protocol creates a pair of Guardian Tokens called gWETH and gUSDC, each wrapping WETH (wrapped 1-to-1 ETH) and USDC respectively. Note that these new tokens are Friends, effectively aware of each other. Each one of them is tracking its total supply (well, the supply owned bu authorized DEXes to be precise as this is discussed below in the Safety section). Upon each transfer, the ratio of the total supplies is calculated, which determines their relative price. 
-                <br/>
-                <br/>
-                Outside protocols can subscribe to one-time function callbacks for a fee. If the callback function would be responsible for re-subscribing again, which makes the process simple and flexible.
-                <br/>
-                <br/>
-                When the price changes, the tokens go through the list of subscriptions and call the relevant callbacks with the price as parameter. More on the efficient data structures for this below. 
-                <br/>
-                <br/>
-                Now this pair of Guardian Tokens can be deployed as liquidity on any DEX. As traders trade these tokens, they call the callbacks and perform liquidations on various protocols.
-                
-            </p>
-        </div>
-
-        <div class="section">
-            <h2>Safety
-            </h2>
-            <p>
-                The pair of Guardian Tokens can be abused in order to manipulate their relative prices. In order to prevent this, the Guardian Tokens have a list of authorized DEXes, set upon their creation. This list includes specific DEXes (actually LP pair contracts on those DEXes). Importantly, **only the tokens owned by these autorized DEXes count towards the ratio that determines the price**. The process goes as follows:
-                <list>
-                    <li>The Guardian Token pair is created with a list of authorized owners (usually one LP at a DEX such as Unsiwap V3, V2, Sushiswap, etc.).</li>
-                
-                    <li>The depositors authorize the transfer of the underlying tokens for the desired wrapped Guardian Token. For example, the depositor authorizes the gUSDC contract to transfer USDC on his behalf, and calls the "wrap" function which mints and equal amount of gUSDC tokens owned by the depositor.</li>
-                
-                    <li>Then such pair can be deposited on (any, but relevantly) the authorized DEX as LP.</li>
-                
-                    <li>The user which swaps one token can unwrap the received token from the DEX, in addition to receiving share of the rewards for performing callback services.</li>
-            </list>
-            <br/>
-        Let us consider another issue: low gWETH/gUSDC liquidity on the authorized DEX. This is not a problem in itself, as it represents a great flash loan opportunity for price arbitrage between gWETH/gUSDC and WETH/USDC. A simple flash swap from Uniswap V3 to any authorized DEX would provide firm pricing on gWETH/gUSDC with almost the same quality as WETH/USDC on Uniswap V3.</li>
-            </p>
-        </div>
-
-        <div class="section">
-            <h2>Price Calculation</h2>
-            <p>
-                Once a transfer in or out of an authorized DEX pool is detected (this is simply part of the "transfer" and "transferFrom" functions of the ERC-20 tokens), the new price has to be calculated. There are several choices, and here is the summary:
-            </p>
-        </div>
-
-        <div class="section">
-            <h3>Latest Price Calculation - AMM Liquidity Pool Reverse Engineering</h3>
-            <p>
-                If the authorized pool is a full-range liquidity pool, such as Uniswap V2 or any of its clones such as SushiSwap, there only needs to be a single pool in the authorized list, as the pool is always active. In such case the latest price is simply the ratio of the Friend Guardian Tokens in the pool, for example:
-                <br/>
-                <br/>
-                $ p(gWETH, gUSDC) = q(gUSDC) /q(gWETH)$
-                <br/>
-                <br/>
-                $p(A, B)$ is the price of token $A$ expressed in token $B$ and $q(Token)$ is the amount of that token in the pool. 
-                <br/>
-                <br/>
-                NOTE: For the hackathon demo we will be calculating prices assuming the tokens are deposited in a single Uniswap V2 pool. However, this is not a limitation.
-                <br/>
-                <br/>
-                If the Friend Guardian Tokens are deposited in a concentrated liquidity pool, the price can also be calculated. Note that calculating the current price for Uniswap V3 is not a simple task, as all pools for the desired token pair have to be consulted. Uniswap V3 has an off-chain library for this (```@uniswap/sdk```), but no on-chain solution, as it would require iterating through all pools for that pair, which would be too expensive. **Luckily**, the reverse engineering is simpler: we know which pool has been triggered, as we keep the list of authorized pools (actually this is a map; see the Optimal Data Structures section below). Then, the price in the concentrated liquidity pool in question can be calculated as follows:
-                <br/>
-                <br/>
-                $p(gWETH, gUSDC) = \sqrt{L * U} * \sqrt{q(gUSDC) /q(gWETH)}$
-                <br/>
-                <br/>
-                where $p$ and $q$ is the same as above and $L$ and $U$ are the lower and upper bounds of the concentrated liquidity tick boundary (Note: I need reference here; I derived this from common sense). 
-                
-            </p>
-        </div>
-
-        <div class="section">
-            <h3>Price Averaging</h3>
-            <p>
-                Following the same lucky circumstance as above, Guardian Token knows who called its "transfer" or "transferFrom" function, so even if the pool is Uniswap V3 concentrated liquidity, the Uniswap V3 built-in "oracle" can be called for price averaging during the last second:
-                <br/>
-                <br/>
-                ```
-                function getUniV3Price(uint32 secondsAgo) public view returns (int56) {
-                        uint32[] memory secondsAgos = new uint32[](1);
-                        secondsAgos[0] = secondsAgo;
-                
-                        int56[] memory tickCumulatives = IUniswapV3Pool(uniswapV3PoolAddress).observe(secondsAgos);
-                        return tickCumulatives[0];
-                    }
-                ```
-                <br/>
-                <br/>
-                Note that this is a responsibility of the consumer of the Guardian Token callback, so we are not going to go into details nor implement this. The above function merely shows that such calculation is not only possible but very feasible and inexpensive.
-            </p>
-        </div>
-
-        <div class="section">
-            <h2>Economic Incentive</h2>
-            <p>
-                Why would anyone provide gWETH/gUSDC liquidity and why would anyone swap or hold these tokens at all, instead of just WETH and USDC? The answer is: for economic incentive.
-                <br/>
-                <br/>
-                Each time Guardian Tokens change hands through an authorized DEX, they potentially cross registered callback price thresholds. Consequently, those callbacks are called and fees are collected for this service. The fees accrue inside the DEX LP contracts, increasing their value. When the LP withdraws his liquidity, part of the profit from this operation is built in it.
-                <br/>
-                <br/>
-                The incentive for the traders on the authorized DEX is also distributed from part of the callback service operation. Each time a callback is executed, the involved DEX trader optimistically receives his reward before even the Guardian callback is executed. This pays for the transaction (gas) fees and more, all in advance.
-            </p>
-        </div>
+        <h2>Is it safe?</h2>
+        <p>
+            To prevent price manipulation, the Guardian Tokens only consider tokens owned by authorized DEXes when determining the price. Also, even with low liquidity, price arbitrage opportunities provide firm pricing.
+        </p>
     </div>
-
     <div class="prizes-section">
         <h2>Our Prizes</h2>
         <a
@@ -222,7 +76,15 @@
     <div class="footer" style="background-color: #333; color: #fff; text-align: center; padding: 20px 0; margin-top: 20px;">
         <h2>Join the Guardian Oracle-Keeper Revolution</h2>
         <p>Be part of the change in blockchain DeFi protocols. Let's create a more stable and efficient DeFi environment together.</p>
+        <a href="https://github.com/jordan-public/guardian-oracle-keeper" target="_blank">
+            <img src="https://github.githubassets.com/images/modules/logos_page/GitHub-Mark.png" width="50" height="50" alt="Github Logo">
+        </a>
+        <a href="mailto:info@defiguardian.xyz">
+            <img src="email-icon.png" alt="Email us" width="50" height="50" alt="Github Logo"/> 
+        </a>
+        <a href="https://t.me/jordansto">
+            <img src="telegram-icon.png" style="background-color: white; padding: 5px;" alt="Join us on Telegram" bg='white' width="40" height="40"/> 
+        </a>
     </div>
-    
 </body>
 </html>
